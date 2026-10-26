@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block title %}Catálogo — TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+.catalog-layout{display:grid;grid-template-columns:220px 1fr;gap:2rem;padding:2.5rem 0 5rem;align-items:start}
+.sidebar{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:1.5rem;position:sticky;top:86px}
+.sidebar-title{font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem}
+.cat-item{display:flex;align-items:center;justify-content:space-between;padding:.6rem .85rem;border-radius:8px;font-size:.9rem;font-weight:500;cursor:pointer;transition:var(--tr);margin-bottom:.2rem;color:var(--muted2);text-decoration:none}
+.cat-item:hover{background:var(--s2);color:var(--text)}
+.cat-item.active{background:rgba(255,107,53,.12);color:var(--a1);border:1px solid rgba(255,107,53,.2)}
+.cat-count-badge{font-size:.72rem;background:var(--s3);border-radius:99px;padding:.1rem .5rem;color:var(--muted)}
+.results-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;margin-bottom:1.8rem}
+.results-count{font-size:.88rem;color:var(--muted2)}
+.results-count strong{color:var(--text);font-weight:700}
+.pcard{display:flex;flex-direction:column;background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:var(--tr)}
+.pcard:hover{border-color:var(--border2);transform:translateY(-4px);box-shadow:0 16px 48px rgba(0,0,0,.5)}
+.pcard-img{position:relative;padding-top:62%;overflow:hidden;background:var(--s2)}
+.pcard-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transition:transform .4s ease}
+.pcard:hover .pcard-img img{transform:scale(1.07)}
+.pcard-badge{position:absolute;top:10px;left:10px}
+.pcard-cat{position:absolute;top:10px;right:10px;background:rgba(7,7,13,.82);border-radius:6px;padding:.2rem .55rem;font-size:.72rem;color:var(--muted2)}
+.pcard-body{padding:1.2rem;display:flex;flex-direction:column;gap:.5rem;flex:1}
+.pcard-brand{font-size:.73rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.pcard-name{font-size:.97rem;font-weight:700;line-height:1.35;color:var(--text)}
+.pcard-desc{font-size:.8rem;color:var(--muted2);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:1}
+.pcard-bottom{display:flex;align-items:center;justify-content:space-between;margin-top:.5rem;gap:.5rem}
+.prices{display:flex;flex-direction:column;gap:.05rem}
+.add-btn{background:var(--a1);color:#fff;border:none;border-radius:9px;padding:.55rem 1rem;font-size:.82rem;font-weight:700;flex-shrink:0;transition:var(--tr)}
+.add-btn:hover{background:#ff7d4d;transform:scale(1.05)}
+.empty-state{text-align:center;padding:5rem 2rem;color:var(--muted)}
+.empty-state .emoji{font-size:3rem;margin-bottom:1rem}
+.search-bar-full{display:flex;gap:.75rem;margin-bottom:1.5rem}
+.search-bar-full input{border-radius:10px}
+.search-bar-full button{flex-shrink:0}
+@media(max-width:700px){.catalog-layout{grid-template-columns:1fr}.sidebar{position:static}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+<div class="catalog-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sidebar-title">Categorías</div>
+    {% set cat_map = {'Todos': ('Todos','🔲'), 'Laptops':('Laptops','💻'), 'Smartphones':('Smartphones','📱'), 'Audífonos':('Audífonos','🎧'), 'Monitores':('Monitores','🖥️'), 'Tablets':('Tablets','📟'), 'Accesorios':('Accesorios','🖱️'), 'Smartwatches':('Smartwatches','⌚')} %}
+    {% for cat in categories %}
+    <a href="/catalog?category={{ cat }}{% if search %}&q={{ search }}{% endif %}"
+       class="cat-item {% if selected_category == cat %}active{% endif %}">
+      {{ cat }}
+    </a>
+    {% endfor %}
+  </aside>
+
+  <!-- MAIN -->
+  <main>
+    <!-- Search bar -->
+    <form class="search-bar-full" action="/catalog" method="GET">
+      {% if selected_category and selected_category != 'Todos' %}
+      <input type="hidden" name="category" value="{{ selected_category }}"/>
+      {% endif %}
+      <input name="q" value="{{ search }}" placeholder="Buscar por nombre, marca o descripción…"/>
+      <button type="submit" class="btn btn-primary" style="padding:.75rem 1.25rem">Buscar</button>
+      {% if search %}<a href="/catalog?category={{ selected_category }}" class="btn btn-outline">✕</a>{% endif %}
+    </form>
+
+    <!-- Results header -->
+    <div class="results-header">
+      <div class="results-count">
+        <strong>{{ products|length }}</strong> producto{% if products|length != 1 %}s{% endif %}
+        {% if selected_category and selected_category != 'Todos' %} en <strong>{{ selected_category }}</strong>{% endif %}
+        {% if search %} para <strong>"{{ search }}"</strong>{% endif %}
+      </div>
+    </div>
+
+    <!-- Grid -->
+    {% if products %}
+    <div class="grid-4">
+      {% for p in products %}
+      <div class="pcard fadeup" style="animation-delay:{{ loop.index0 * 0.05 }}s">
+        <a href="/product/{{ p.id }}" class="pcard-img">
+          <img src="{{ p.image }}" alt="{{ p.name }}" loading="lazy"
+               onerror="this.src='https://placehold.co/600x375/151521/7070a0?text={{ p.name[:12] }}'"/>
+          {% if p.badge %}<div class="pcard-badge"><span class="badge badge-orange">{{ p.badge }}</span></div>{% endif %}
+          <div class="pcard-cat">{{ p.category }}</div>
+        </a>
+        <div class="pcard-body">
+          <div class="pcard-brand">{{ p.brand }}</div>
+          <a href="/product/{{ p.id }}" class="pcard-name">{{ p.name }}</a>
+          <div class="pcard-desc">{{ p.description }}</div>
+          <div class="rating-row">
+            <span class="stars">{% for i in range(p.rating|int) %}★{% endfor %}{% if p.rating % 1 >= 0.5 %}½{% endif %}</span>
+            <span class="rating-count">({{ p.reviews }})</span>
+          </div>
+          <div class="pcard-bottom">
+            <div class="prices">
+              <span class="price-new">${{ "%.2f"|format(p.price) }}</span>
+              {% if p.original_price > p.price %}<span class="price-old">${{ "%.2f"|format(p.original_price) }}</span>{% endif %}
+            </div>
+            <button class="add-btn" onclick="addToCart({{ p.id }});event.preventDefault()">+ Añadir</button>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="emoji">🔍</div>
+      <h3 style="font-size:1.3rem;font-weight:700;margin-bottom:.5rem">Sin resultados</h3>
+      <p>No encontramos productos que coincidan con tu búsqueda.</p>
+      <a href="/catalog" class="btn btn-outline" style="margin-top:1.5rem;display:inline-flex">Ver todos los productos</a>
+    </div>
+    {% endif %}
+  </main>
+</div>
+</div>
+{% endblock %}

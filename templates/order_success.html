@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}¡Pedido confirmado! — TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+.success-wrap{max-width:620px;margin:5rem auto;text-align:center;padding:0 1.5rem}
+.success-icon{width:90px;height:90px;background:rgba(53,212,120,.12);border:2px solid rgba(53,212,120,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:2.5rem;margin:0 auto 2rem}
+.success-title{font-size:2.2rem;font-weight:900;letter-spacing:-.04em;margin-bottom:.75rem}
+.success-sub{color:var(--muted2);font-size:1rem;line-height:1.7;margin-bottom:2.5rem}
+.order-card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:1.75rem;margin-bottom:2rem;text-align:left}
+.order-card-row{display:flex;justify-content:space-between;padding:.45rem 0;border-bottom:1px solid var(--border);font-size:.9rem}
+.order-card-row:last-child{border-bottom:none}
+.order-card-key{color:var(--muted2)}
+.order-card-val{font-weight:600}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:9999;overflow:hidden}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="confetti" id="confetti"></div>
+<div class="wrap">
+  <div class="success-wrap">
+    <div class="success-icon">✅</div>
+    <h1 class="success-title">¡Pedido confirmado!</h1>
+    <p class="success-sub">
+      Gracias <strong>{{ name }}</strong>, tu pedido ha sido procesado correctamente.<br>
+      Recibirás la confirmación en <strong>{{ email }}</strong>.
+    </p>
+
+    <div class="order-card">
+      <div style="font-size:.78rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--a1);margin-bottom:1rem">Detalles del pedido</div>
+      <div class="order-card-row">
+        <span class="order-card-key">Número de orden</span>
+        <span class="order-card-val" style="font-family:var(--mono);color:var(--a2)">{{ order_id }}</span>
+      </div>
+      <div class="order-card-row">
+        <span class="order-card-key">Cliente</span>
+        <span class="order-card-val">{{ name }}</span>
+      </div>
+      <div class="order-card-row">
+        <span class="order-card-key">Email</span>
+        <span class="order-card-val">{{ email }}</span>
+      </div>
+      <div class="order-card-row">
+        <span class="order-card-key">Total pagado</span>
+        <span class="order-card-val" style="font-family:var(--mono);font-size:1.05rem;color:var(--green)">${{ "%.2f"|format(total) }}</span>
+      </div>
+      <div class="order-card-row">
+        <span class="order-card-key">Estado</span>
+        <span class="order-card-val" style="color:var(--green)">✅ Confirmado</span>
+      </div>
+      <div class="order-card-row">
+        <span class="order-card-key">Envío estimado</span>
+        <span class="order-card-val">24-48 horas hábiles</span>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:1rem;justify-content:center;flex-wrap:wrap">
+      <a href="/" class="btn btn-primary btn-lg">Ir al inicio</a>
+      <a href="/catalog" class="btn btn-outline btn-lg">Seguir comprando</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Simple confetti
+const colors=['#ff6b35','#ff9b35','#ffcc35','#35d478','#4f8fff'];
+const c=document.getElementById('confetti');
+for(let i=0;i<60;i++){
+  const el=document.createElement('div');
+  const size=Math.random()*10+5;
+  el.style.cssText=`position:absolute;width:${size}px;height:${size}px;background:${colors[i%colors.length]};top:-20px;left:${Math.random()*100}%;border-radius:${Math.random()>.5?'50%':'2px'};opacity:${Math.random()*.8+.2};animation:fall ${Math.random()*2+2}s linear ${Math.random()*1.5}s both`;
+  c.appendChild(el);
+}
+const style=document.createElement('style');
+style.textContent='@keyframes fall{from{transform:translateY(-20px) rotate(0deg);opacity:1}to{transform:translateY(110vh) rotate(720deg);opacity:0}}';
+document.head.appendChild(style);
+setTimeout(()=>c.remove(),5000);
+</script>
+{% endblock %}

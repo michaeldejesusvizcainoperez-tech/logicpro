@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block title %}TechStore{% endblock %}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070d;
+  --s1:#0f0f1a;
+  --s2:#151521;
+  --s3:#1c1c2e;
+  --border:#252535;
+  --border2:#2e2e45;
+  --a1:#ff6b35;
+  --a2:#ff9b35;
+  --a3:#ffcc35;
+  --blue:#4f8fff;
+  --green:#35d478;
+  --text:#eeeef5;
+  --muted:#7070a0;
+  --muted2:#9090b8;
+  --r:10px;
+  --r2:18px;
+  --tr:0.18s cubic-bezier(.4,0,.2,1);
+  --font:'Outfit',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;-webkit-font-smoothing:antialiased}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+button{cursor:pointer;font-family:var(--font);border:none;outline:none;transition:var(--tr)}
+input,select,textarea{font-family:var(--font);background:var(--s2);border:1px solid var(--border2);color:var(--text);border-radius:var(--r);padding:.75rem 1rem;font-size:.95rem;width:100%;outline:none;transition:var(--tr)}
+input:focus,select:focus,textarea:focus{border-color:var(--a1);box-shadow:0 0 0 3px rgba(255,107,53,.12)}
+input::placeholder,textarea::placeholder{color:var(--muted)}
+
+/* ── LAYOUT ── */
+.wrap{max-width:1320px;margin:0 auto;padding:0 1.5rem}
+
+/* ── NAV ── */
+nav{position:sticky;top:0;z-index:200;background:rgba(7,7,13,.88);backdrop-filter:blur(24px);border-bottom:1px solid var(--border)}
+.nav-inner{display:flex;align-items:center;height:66px;gap:1rem}
+.logo{display:flex;align-items:center;gap:.75rem;flex-shrink:0;font-weight:900;font-size:1.2rem;letter-spacing:-.03em}
+.logo-icon{width:38px;height:38px;border-radius:10px;background:linear-gradient(135deg,var(--a1),var(--a3));display:flex;align-items:center;justify-content:center;font-size:1.15rem}
+.logo span{color:var(--a1)}
+.nav-links{display:flex;gap:.1rem;flex:1}
+.nav-link{padding:.5rem .85rem;border-radius:8px;font-size:.88rem;font-weight:500;color:var(--muted2);transition:var(--tr)}
+.nav-link:hover,.nav-link.active{color:var(--text);background:var(--s2)}
+.nav-search{display:flex;align-items:center;gap:.5rem;flex:1;max-width:340px}
+.nav-search input{padding:.5rem 1rem;font-size:.88rem;border-radius:8px;height:38px}
+.cart-btn{display:flex;align-items:center;gap:.6rem;padding:.5rem 1.1rem;border-radius:9px;background:var(--s2);border:1px solid var(--border2);font-size:.88rem;font-weight:600;position:relative;transition:var(--tr);white-space:nowrap}
+.cart-btn:hover{border-color:var(--a1);color:var(--a1)}
+.cart-badge{position:absolute;top:-7px;right:-7px;background:var(--a1);color:#fff;border-radius:99px;min-width:18px;height:18px;font-size:.65rem;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0 4px}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;padding:.75rem 1.5rem;border-radius:var(--r);font-weight:700;font-size:.9rem;letter-spacing:.01em;transition:var(--tr);cursor:pointer}
+.btn-primary{background:var(--a1);color:#fff}
+.btn-primary:hover{background:#ff7d4d;transform:translateY(-1px);box-shadow:0 6px 24px rgba(255,107,53,.35)}
+.btn-outline{background:transparent;color:var(--text);border:1px solid var(--border2)}
+.btn-outline:hover{border-color:var(--a1);color:var(--a1)}
+.btn-ghost{background:transparent;color:var(--muted2);padding:.5rem .75rem}
+.btn-ghost:hover{color:var(--text);background:var(--s2)}
+.btn-sm{padding:.5rem 1rem;font-size:.82rem}
+.btn-lg{padding:1rem 2rem;font-size:1rem}
+
+/* ── CARDS ── */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden;transition:var(--tr)}
+.card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:0 12px 40px rgba(0,0,0,.5)}
+
+/* ── BADGE ── */
+.badge{display:inline-flex;align-items:center;padding:.22rem .65rem;border-radius:99px;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.badge-orange{background:rgba(255,107,53,.15);color:var(--a1);border:1px solid rgba(255,107,53,.3)}
+.badge-green{background:rgba(53,212,120,.12);color:var(--green);border:1px solid rgba(53,212,120,.25)}
+.badge-blue{background:rgba(79,143,255,.12);color:var(--blue);border:1px solid rgba(79,143,255,.25)}
+
+/* ── RATING ── */
+.stars{color:#ffb822;font-size:.85rem;letter-spacing:-.1em}
+.rating-row{display:flex;align-items:center;gap:.4rem}
+.rating-count{font-size:.78rem;color:var(--muted)}
+
+/* ── TOAST ── */
+#toast{position:fixed;bottom:2rem;right:2rem;z-index:999;display:flex;flex-direction:column;gap:.6rem;pointer-events:none}
+.toast-item{background:var(--s3);border:1px solid var(--border2);border-left:3px solid var(--green);border-radius:10px;padding:.85rem 1.2rem;font-size:.88rem;font-weight:500;opacity:0;transform:translateX(20px);transition:.3s ease;pointer-events:none;max-width:320px}
+.toast-item.show{opacity:1;transform:translateX(0)}
+
+/* ── FOOTER ── */
+footer{margin-top:6rem;border-top:1px solid var(--border);padding:2.5rem 0}
+.footer-inner{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem}
+.footer-logo{font-weight:900;font-size:1.1rem}
+.footer-logo span{color:var(--a1)}
+.footer-text{color:var(--muted);font-size:.85rem}
+
+/* ── MISC ── */
+.price-new{font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--a2);letter-spacing:-.02em}
+.price-old{font-family:var(--mono);font-size:.9rem;color:var(--muted);text-decoration:line-through}
+.section-label{font-size:.78rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--a1);margin-bottom:.75rem}
+.section-title{font-size:clamp(1.8rem,3.5vw,2.6rem);font-weight:900;letter-spacing:-.03em;line-height:1.1;margin-bottom:.6rem}
+.section-sub{color:var(--muted2);font-size:1rem;margin-bottom:2.5rem}
+.grid-4{display:grid;grid-template-columns:repeat(auto-fill,minmax(268px,1fr));gap:1.4rem}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+.fadeup{animation:fadeUp .45s ease both}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--s1)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--a1)}
+</style>
+{% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-inner">
+    <a href="/" class="logo">
+      <div class="logo-icon">⚡</div>
+      Tech<span>Store</span>
+    </a>
+    <div class="nav-links">
+      <a href="/" class="nav-link {% if request.endpoint=='index' %}active{% endif %}">Inicio</a>
+      <a href="/catalog" class="nav-link {% if request.endpoint=='catalog' %}active{% endif %}">Catálogo</a>
+    </div>
+    <form class="nav-search" action="/catalog" method="GET">
+      <input name="q" placeholder="🔍 Buscar productos…" value="{{ request.args.get('q','') }}"/>
+    </form>
+    <a href="/cart" class="cart-btn">
+      🛒 Carrito
+      {% if cart_count > 0 %}<span class="cart-badge">{{ cart_count }}</span>{% endif %}
+    </a>
+  </div>
+</nav>
+
+{% block content %}{% endblock %}
+
+<footer>
+  <div class="wrap footer-inner">
+    <div class="footer-logo">Tech<span>Store</span></div>
+    <div class="footer-text">© 2024 TechStore · La mejor tecnología al mejor precio</div>
+    <div style="display:flex;gap:.75rem">
+      <span class="badge badge-blue">Python + Flask</span>
+      <span class="badge badge-orange">100% Funcional</span>
+    </div>
+  </div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+function showToast(msg, type='success'){
+  const t=document.getElementById('toast');
+  const el=document.createElement('div');
+  el.className='toast-item';
+  el.style.borderLeftColor = type==='error'?'#ff4f4f':'var(--green)';
+  el.textContent=msg;
+  t.appendChild(el);
+  requestAnimationFrame(()=>{el.classList.add('show')});
+  setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),300)},3000);
+}
+
+function addToCart(pid, qty=1){
+  const fd=new FormData();
+  fd.append('quantity', qty);
+  fetch(`/cart/add/${pid}`,{method:'POST',body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success){
+        showToast(d.message);
+        document.querySelectorAll('.cart-badge').forEach(b=>b.textContent=d.cart_count);
+        const cb=document.querySelector('.cart-btn');
+        if(cb&&!cb.querySelector('.cart-badge')){
+          const b=document.createElement('span');b.className='cart-badge';b.textContent=d.cart_count;cb.appendChild(b);
+        }
+      }
+    });
+}
+</script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

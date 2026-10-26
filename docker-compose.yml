@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  # 1. El servicio de la Base de Datos (PostgreSQL)
+  db:
+    image: postgres:15-alpine
+    container_name: techstore_db
+    restart: always
+    environment:
+      POSTGRES_USER: mi_usuario
+      POSTGRES_PASSWORD: mi_password
+      POSTGRES_DB: techstore_db
+    ports:
+      - "5432:5432" # Te permite conectarte desde herramientas externas en tu PC si lo necesitas
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - red-techstore
+
+  # 2. El servicio de tu aplicación Flask (Web)
+  web:
+    build: .
+    container_name: techstore_web
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=tu-clave-secreta-super-larga
+      - DATABASE_URL=postgresql://mi_usuario:mi_password@db:5432/techstore_db
+    depends_on:
+      - db
+    networks:
+      - red-techstore
+
+# Volúmenes para asegurar que los datos no se borren al apagar el contenedor
+volumes:
+  pgdata:
+
+# Red interna para que Flask y Postgres se comuniquen de forma privada
+networks:
+  red-techstore:
+    driver: bridge

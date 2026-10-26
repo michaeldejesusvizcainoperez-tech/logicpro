@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Carrito — TechStore{% endblock %}
+
+{% block extra_css %}
+<style>
+.cart-layout{display:grid;grid-template-columns:1fr 360px;gap:2rem;padding:2.5rem 0 5rem;align-items:start}
+.cart-item{display:flex;gap:1.2rem;align-items:center;background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:1.2rem;transition:var(--tr)}
+.cart-item:hover{border-color:var(--border2)}
+.cart-item-img{width:90px;height:90px;border-radius:10px;object-fit:cover;flex-shrink:0;background:var(--s2)}
+.cart-item-info{flex:1;min-width:0}
+.cart-item-brand{font-size:.73rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:.2rem}
+.cart-item-name{font-weight:700;font-size:.97rem;line-height:1.3;margin-bottom:.4rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cart-item-price{font-family:var(--mono);color:var(--a2);font-weight:700;font-size:.95rem}
+.cart-item-right{display:flex;flex-direction:column;align-items:flex-end;gap:.75rem;flex-shrink:0}
+.qty-ctrl{display:flex;align-items:center;background:var(--s2);border:1px solid var(--border2);border-radius:8px;overflow:hidden}
+.qty-btn{background:none;border:none;color:var(--text);width:34px;height:34px;font-size:1rem;font-weight:700;cursor:pointer;transition:var(--tr)}
+.qty-btn:hover{background:var(--s3);color:var(--a1)}
+.qty-num{width:36px;text-align:center;font-family:var(--mono);font-weight:700;font-size:.88rem;background:none;border:none;border-left:1px solid var(--border2);border-right:1px solid var(--border2);color:var(--text);height:34px}
+.item-subtotal{font-family:var(--mono);font-size:1.05rem;font-weight:700;text-align:right}
+.remove-btn{background:none;border:none;color:var(--muted);font-size:.8rem;cursor:pointer;transition:var(--tr);padding:.2rem .4rem;border-radius:5px}
+.remove-btn:hover{color:#ff4f4f;background:rgba(255,79,79,.1)}
+.summary-box{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);padding:1.75rem;position:sticky;top:86px}
+.summary-title{font-size:1.1rem;font-weight:800;letter-spacing:-.02em;margin-bottom:1.5rem}
+.summary-row{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;padding:.5rem 0}
+.summary-divider{height:1px;background:var(--border);margin:.75rem 0}
+.summary-total{font-family:var(--mono);font-size:1.5rem;font-weight:800;color:var(--a2)}
+.empty-cart{text-align:center;padding:6rem 2rem}
+.empty-icon{font-size:4rem;margin-bottom:1.25rem}
+.items-list{display:flex;flex-direction:column;gap:.9rem}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wrap">
+  <div style="padding-top:2rem;margin-bottom:2rem">
+    <h1 style="font-size:2rem;font-weight:900;letter-spacing:-.04em">Tu Carrito</h1>
+    <p style="color:var(--muted2);margin-top:.3rem">{{ items|length }} artículo{% if items|length != 1 %}s{% endif %}</p>
+  </div>
+
+  {% if items %}
+  <div class="cart-layout">
+    <!-- ITEMS -->
+    <div>
+      <div class="items-list" id="cart-list">
+        {% for item in items %}
+        <div class="cart-item" id="item-{{ item.id }}">
+          <a href="/product/{{ item.id }}">
+            <img class="cart-item-img" src="{{ item.image }}" alt="{{ item.name }}"
+                 onerror="this.src='https://placehold.co/90x90/151521/7070a0?text=?'"/>
+          </a>
+          <div class="cart-item-info">
+            <div class="cart-item-brand">{{ item.brand }}</div>
+            <a href="/product/{{ item.id }}" class="cart-item-name">{{ item.name }}</a>
+            <div class="cart-item-price">${{ "%.2f"|format(item.price) }} c/u</div>
+          </div>
+          <div class="cart-item-right">
+            <div class="qty-ctrl">
+              <button class="qty-btn" onclick="updateQty({{ item.id }}, {{ item.quantity - 1 }})">−</button>
+              <span class="qty-num" id="qty-{{ item.id }}">{{ item.quantity }}</span>
+              <button class="qty-btn" onclick="updateQty({{ item.id }}, {{ item.quantity + 1 }})">+</button>
+            </div>
+            <div class="item-subtotal" id="sub-{{ item.id }}">${{ "%.2f"|format(item.subtotal) }}</div>
+            <button class="remove-btn" onclick="removeItem({{ item.id }})">✕ Eliminar</button>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:1.5rem">
+        <a href="/catalog" class="btn btn-outline btn-sm">← Seguir comprando</a>
+      </div>
+    </div>
+
+    <!-- RESUMEN -->
+    <div class="summary-box">
+      <div class="summary-title">Resumen del pedido</div>
+      <div class="summary-row"><span style="color:var(--muted2)">Subtotal</span><span id="summary-sub">${{ "%.2f"|format(total) }}</span></div>
+      <div class="summary-row"><span style="color:var(--muted2)">Envío</span><span style="color:var(--green)">Gratis</span></div>
+      <div class="summary-row"><span style="color:var(--muted2)">Impuesto (0%)</span><span>$0.00</span></div>
+      <div class="summary-divider"></div>
+      <div class="summary-row" style="margin-bottom:1.5rem">
+        <span style="font-weight:700;font-size:1rem">Total</span>
+        <span class="summary-total" id="summary-total">${{ "%.2f"|format(total) }}</span>
+      </div>
+      <a href="/checkout" class="btn btn-primary" style="width:100%;justify-content:center;padding:1rem;font-size:1rem;display:flex">
+        Proceder al pago →
+      </a>
+      <div style="display:flex;gap:.5rem;justify-content:center;margin-top:1.2rem;flex-wrap:wrap">
+        <span style="font-size:.75rem;color:var(--muted)">🔒 Pago seguro</span>
+        <span style="font-size:.75rem;color:var(--muted)">· Devolución 30 días</span>
+        <span style="font-size:.75rem;color:var(--muted)">· Garantía oficial</span>
+      </div>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="empty-cart">
+    <div class="empty-icon">🛒</div>
+    <h2 style="font-size:1.5rem;font-weight:800;margin-bottom:.75rem">Tu carrito está vacío</h2>
+    <p style="color:var(--muted2);margin-bottom:2rem">Explora nuestro catálogo y añade productos que te gusten.</p>
+    <a href="/catalog" class="btn btn-primary btn-lg">Explorar productos →</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function updateQty(pid, qty){
+  if(qty < 1){ removeItem(pid); return; }
+  const fd=new FormData();
+  fd.append('quantity', qty);
+  fetch(`/cart/update/${pid}`,{method:'POST',body:fd})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success){
+        const qEl=document.getElementById(`qty-${pid}`);
+        if(qEl) qEl.textContent=qty;
+        // Recalc subtotal from page (approximate)
+        document.querySelectorAll('.cart-badge').forEach(b=>b.textContent=d.cart_count);
+        // Refresh totals
+        document.getElementById('summary-sub').textContent=`$${d.total.toFixed(2)}`;
+        document.getElementById('summary-total').textContent=`$${d.total.toFixed(2)}`;
+        // Update subtotal for this item
+        const priceEl=document.querySelector(`#item-${pid} .cart-item-price`);
+        if(priceEl){
+          const price=parseFloat(priceEl.textContent.replace('$','').replace(' c/u',''));
+          document.getElementById(`sub-${pid}`).textContent=`$${(price*qty).toFixed(2)}`;
+        }
+        if(d.cart_count===0) location.reload();
+      }
+    });
+}
+function removeItem(pid){
+  fetch(`/cart/remove/${pid}`,{method:'POST'})
+    .then(r=>r.json())
+    .then(d=>{
+      if(d.success){
+        const el=document.getElementById(`item-${pid}`);
+        if(el){ el.style.opacity='0'; el.style.transform='translateX(30px)'; setTimeout(()=>{el.remove();if(d.cart_count===0)location.reload();},300); }
+        document.querySelectorAll('.cart-badge').forEach(b=>b.textContent=d.cart_count);
+        document.getElementById('summary-sub').textContent=`$${d.total.toFixed(2)}`;
+        document.getElementById('summary-total').textContent=`$${d.total.toFixed(2)}`;
+      }
+    });
+}
+</script>
+{% endblock %}
